@@ -1,32 +1,56 @@
-# 🧊💊 Smart Medicine Fridge Lab (React + FastAPI)
+# Smart Medicine Fridge Lab (React + FastAPI)
 
-의약품 냉장고 주제의 **기술 검증용 미니 연습 레포**입니다.  
-실제 센서/카메라 연동 전 단계에서, **가상 센서 이벤트(Postman)** 와 **키오스크 UI(React)** 흐름을 빠르게 확인하는 것이 목적입니다.
+의약품 냉장고 주제의 "기술 확인용" 미니 레포입니다.
 
-## 목표
-- FastAPI가 가상 센서 이벤트를 수신하고(POST)
-- React가 현재 상태를 조회해(GET) 화면에 반영하는지 확인
-- 라즈베리파이5(리눅스)에 올릴 수 있는 최소 구성 검증
+이번 1차 목표는 딱 1가지입니다.
+- 임베디드(카메라/인식) 쪽에서 인식 결과를 POST로 보내면(FastAPI)
+- 프론트(React)가 최신 결과를 조회해 화면에 표시한다
 
-> 본 레포는 완성 제품이 아니라 “기술 확인용”이며, 기능 범위를 최소화합니다.
+실제 센서는 아직 연결하지 않고, Postman/curl로 가상 요청을 보내서 흐름만 확인합니다.
 
 ## 구성
-- `frontend/` : React 키오스크 UI
-- `backend/` : FastAPI API 서버 (in-memory 상태 저장)
+- backend/ : FastAPI (in-memory로 최신 인식 결과만 저장)
+- frontend/ : Vite + React (대시보드 1페이지)
+- docs/ : 최소 API 계약
 
-## 빠른 실행
-### 1) Backend
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate  # (Windows는 .venv\Scripts\activate)
-pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
+## 실행
 
-### 2) Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
+### 1) Backend 실행
+
+    cd backend
+    python -m venv .venv
+    # macOS/Linux
+    source .venv/bin/activate
+    # Windows PowerShell
+    # .venv\Scripts\Activate.ps1
+
+    pip install -r requirements.txt
+    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+- Swagger: http://localhost:8000/docs
+
+### 2) Frontend 실행
+
+    cd frontend
+    npm install
+    npm run dev
+
+- Frontend: http://localhost:5173
+
+## 테스트
+
+### 1) 가상 인식 결과 POST
+
+    curl -X POST http://localhost:8000/api/vision/results \
+      -H "Content-Type: application/json" \
+      -d '{"label":"INSULIN","confidence":0.92,"bbox":[10,20,200,220],"source":"postman"}'
+
+### 2) 최신 결과 조회
+
+    curl http://localhost:8000/api/vision/latest
+
+자세한 내용은 docs/api-contract.md 참고.
+
+## 범위
+- 포함: 최신 인식 결과 1건 저장/조회 (in-memory)
+- 제외: DB, 로그인, 실제 센서/카메라 연동, 배포 스크립트(추후 라즈베리용으로 별도)
